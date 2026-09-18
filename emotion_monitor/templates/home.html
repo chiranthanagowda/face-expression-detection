@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-5 mb-4 rounded-3 text-white shadow" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6);">
+    <div class="container-fluid py-3">
+        <h1 class="display-5 fw-bold"><i class="bi bi-emoji-smile"></i> EduSense</h1>
+        <p class="fs-5 col-md-9">
+            An AI-powered classroom emotion monitoring platform that helps educators understand
+            student engagement and emotional well-being through real-time facial expression analysis.
+        </p>
+        {% if not session.user_id %}
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg me-2">Get Started</a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">Login</a>
+        {% else %}
+            <a href="{{ url_for('predict') }}" class="btn btn-light btn-lg">Start Analysis</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="display-6 text-primary"><i class="bi bi-camera-video"></i></div>
+                <h5 class="card-title mt-2">Real-time Detection</h5>
+                <p class="card-text text-muted">Capture students' facial expressions live via webcam and classify emotions instantly using a CNN model.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="display-6 text-success"><i class="bi bi-pie-chart"></i></div>
+                <h5 class="card-title mt-2">Visual Analytics</h5>
+                <p class="card-text text-muted">View the distribution of detected emotions per session as an easy-to-read pie chart stored on your dashboard.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="display-6 text-warning"><i class="bi bi-shield-lock"></i></div>
+                <h5 class="card-title mt-2">Secure Records</h5>
+                <p class="card-text text-muted">All session histories are stored securely and can be reviewed or deleted anytime from your dashboard.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-5 p-4 bg-light rounded-3">
+    <h3 class="fw-bold">How It Works</h3>
+    <ol class="mt-3">
+        <li><strong>Register / Login</strong> to your account.</li>
+        <li>Go to the <strong>Analyse</strong> page and choose how long you want the camera to run.</li>
+        <li>The system opens a live webcam window and detects faces plus emotions in real time.</li>
+        <li>When done, a <strong>pie chart</strong> and full session summary are saved to your <strong>Dashboard</strong>.</li>
+    </ol>
+</div>
+{% endblock %}

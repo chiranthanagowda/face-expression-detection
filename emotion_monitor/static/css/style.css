@@ -1,0 +1,33 @@
+body {
+    background: #f4f6fa;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.card {
+    border-radius: 12px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(30, 58, 138, 0.12);
+}
+
+.navbar-brand {
+    font-size: 1.35rem;
+    letter-spacing: 0.5px;
+}
+
+footer {
+    background: #fff;
+}
+
+kbd {
+    background: #1e3a8a;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+}

@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="fw-bold mb-0">
+        <i class="bi bi-graph-up"></i> Session Result
+        <small class="text-muted fs-6">#{{ session_id }}</small>
+    </h2>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('download_report', session_id=session_id) }}"
+           class="btn btn-success">
+            <i class="bi bi-file-earmark-pdf"></i> Download PDF Report
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<!-- KPI CARDS -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center p-3 h-100">
+            <small class="text-muted text-uppercase">Dominant</small>
+            <div class="h4 fw-bold text-primary mb-0">{{ dominant }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center p-3 h-100">
+            <small class="text-muted text-uppercase">Avg Confidence</small>
+            <div class="h4 fw-bold text-success mb-0">{{ avg_confidence }}%</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center p-3 h-100">
+            <small class="text-muted text-uppercase">Transitions</small>
+            <div class="h4 fw-bold text-warning mb-0">{{ transitions }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center p-3 h-100">
+            <small class="text-muted text-uppercase">Frames</small>
+            <div class="h4 fw-bold text-info mb-0">{{ total_faces }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- CHARTS -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-3">Emotion Distribution</h6>
+                {% if chart %}
+                    <img src="data:image/png;base64,{{ chart }}"
+                         class="img-fluid rounded" alt="Pie chart">
+                {% else %}
+                    <p class="text-muted">No pie chart available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-3">Emotion Timeline</h6>
+                {% if timeline_chart %}
+                    <img src="data:image/png;base64,{{ timeline_chart }}"
+                         class="img-fluid rounded" alt="Timeline chart">
+                {% else %}
+                    <p class="text-muted">No timeline data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SESSION META -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-info-circle"></i> Session Summary
+        </h5>
+        <div class="row">
+            <div class="col-md-6">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Date</span><strong>{{ created_at }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Duration</span><strong>{{ duration }}s</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Frames Classified</span><strong>{{ total_faces }}</strong>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Dominant Emotion</span>
+                        <span class="badge bg-success fs-6">{{ dominant }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Average Confidence</span>
+                        <strong>{{ avg_confidence }}%</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Emotion Transitions</span>
+                        <strong>{{ transitions }}</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PER-TOPIC BREAKDOWN (only if markers were supplied) -->
+{% if per_topic %}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-bookmark-star"></i> Per-Topic Expression Breakdown
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Segment</th>
+                        <th>Time Range</th>
+                        {% for e in ['Angry','Disgusted','Fearful','Happy','Neutral','Sad','Surprised'] %}
+                            <th class="text-center small">{{ e }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in per_topic %}
+                    <tr>
+                        <td><strong>{{ t.label }}</strong></td>
+                        <td class="text-muted small">{{ t.start }}s – {{ t.end }}s</td>
+                        {% for e in ['Angry','Disgusted','Fearful','Happy','Neutral','Sad','Surprised'] %}
+                            <td class="text-center">
+                                {{ t.counts[e] if t.counts[e] > 0 else '—' }}%
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- OBSERVATIONS -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-clipboard-check"></i> Observations
+        </h5>
+        <pre class="bg-light p-3 rounded mb-3"
+             style="white-space:pre-wrap; font-family: inherit;">{{ observations }}</pre>
+        <div class="alert alert-warning mb-0 small">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Disclaimer:</strong> These are estimates derived from observable
+            facial-expression patterns. Facial expressions alone cannot establish
+            attention, comprehension, or internal emotional state.
+        </div>
+    </div>
+</div>
+
+{% endblock %}

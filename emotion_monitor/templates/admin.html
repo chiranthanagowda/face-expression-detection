@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">
+        <i class="bi bi-shield-check"></i> Admin Panel
+    </h2>
+    <span class="badge bg-primary fs-6">
+        <i class="bi bi-person-badge"></i> {{ session.username }}
+    </span>
+</div>
+
+<!-- ======================= KPI CARDS ======================= -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-white border-0 shadow-sm h-100" style="background:#1e3a8a;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="small text-uppercase opacity-75">Students</div>
+                    <div class="display-6 fw-bold">{{ total_students }}</div>
+                </div>
+                <i class="bi bi-people display-5 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-white border-0 shadow-sm h-100" style="background:#16a34a;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="small text-uppercase opacity-75">Total Sessions</div>
+                    <div class="display-6 fw-bold">{{ stats.total_sessions }}</div>
+                </div>
+                <i class="bi bi-clipboard-data display-5 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-white border-0 shadow-sm h-100" style="background:#0891b2;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="small text-uppercase opacity-75">Avg Confidence</div>
+                    <div class="display-6 fw-bold">{{ stats.avg_confidence_pct }}%</div>
+                </div>
+                <i class="bi bi-graph-up-arrow display-5 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-white border-0 shadow-sm h-100" style="background:#7c3aed;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="small text-uppercase opacity-75">Avg Duration</div>
+                    <div class="display-6 fw-bold">{{ stats.avg_duration }}s</div>
+                </div>
+                <i class="bi bi-stopwatch display-5 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =================== AGGREGATE BREAKDOWN =================== -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3 h-100">
+            <div class="text-success h2 fw-bold mb-0">{{ stats.positive_pct }}%</div>
+            <small class="text-muted">
+                Positive dominant sessions <i class="bi bi-emoji-smile"></i>
+            </small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3 h-100">
+            <div class="text-secondary h2 fw-bold mb-0">{{ stats.neutral_pct }}%</div>
+            <small class="text-muted">
+                Neutral dominant sessions <i class="bi bi-emoji-neutral"></i>
+            </small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3 h-100">
+            <div class="text-danger h2 fw-bold mb-0">{{ stats.negative_pct }}%</div>
+            <small class="text-muted">
+                Negative dominant sessions <i class="bi bi-emoji-frown"></i>
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- ========================= CHARTS ========================= -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-3">
+                    Dominant Emotion Across Sessions
+                </h6>
+                <img src="data:image/png;base64,{{ charts.dominant_bar }}"
+                     class="img-fluid rounded" alt="Dominant bar chart">
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-3">Sessions Per Day</h6>
+                <img src="data:image/png;base64,{{ charts.daily_line }}"
+                     class="img-fluid rounded" alt="Daily line chart">
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-3">
+                    Emotion Peaks by Hour of Day
+                </h6>
+                <img src="data:image/png;base64,{{ charts.hourly_heat }}"
+                     class="img-fluid rounded" alt="Hourly heatmap">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== ALL SESSIONS TABLE ==================== -->
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">All Student Sessions</h5>
+
+        {% if sessions %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Student</th>
+                        <th>Email</th>
+                        <th>Dominant</th>
+                        <th>Confidence</th>
+                        <th>Duration</th>
+                        <th>Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in sessions %}
+                    <tr>
+                        <td>{{ s.id }}</td>
+                        <td>
+                            <i class="bi bi-person-circle text-secondary"></i>
+                            {{ s.username }}
+                        </td>
+                        <td class="text-muted small">{{ s.email }}</td>
+                        <td>
+                            <span class="badge bg-info text-dark">
+                                {{ s.dominant_emotion }}
+                            </span>
+                        </td>
+                        <td>{{ (s.avg_confidence * 100) | round(1) }}%</td>
+                        <td>{{ s.duration }}s</td>
+                        <td class="small text-muted">{{ s.created_at }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('result', session_id=s.id) }}"
+                               class="btn btn-sm btn-outline-primary"
+                               title="View session">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <form method="POST"
+                                  action="{{ url_for('delete_session', session_id=s.id) }}"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Delete this session?');">
+                                <button class="btn btn-sm btn-outline-danger"
+                                        title="Delete session">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-inbox display-4 text-muted"></i>
+            <p class="text-muted mt-2 mb-0">No sessions recorded yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

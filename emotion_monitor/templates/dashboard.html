@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-speedometer2"></i> My Dashboard</h2>
+    <a href="{{ url_for('predict') }}" class="btn btn-primary">
+        <i class="bi bi-camera-video"></i> New Analysis
+    </a>
+</div>
+
+{% if sessions %}
+<div class="row g-4">
+    {% for s in sessions %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="badge bg-primary">Session #{{ s.id }}</span>
+                <small class="text-muted">{{ s.created_at }}</small>
+            </div>
+            <div class="card-body text-center">
+                {% if s.chart %}
+                    <img src="data:image/png;base64,{{ s.chart }}" class="img-fluid rounded mb-3" alt="chart">
+                {% endif %}
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Dominant Emotion</span>
+                        <strong class="text-primary">{{ s.dominant_emotion }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Duration</span><strong>{{ s.duration }}s</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Frames Classified</span><strong>{{ s.total_faces }}</strong>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer bg-white d-flex gap-2">
+                <a href="{{ url_for('result', session_id=s.id) }}" class="btn btn-outline-primary btn-sm flex-fill">
+                    <i class="bi bi-eye"></i> View
+                </a>
+                <form method="POST" action="{{ url_for('delete_session', session_id=s.id) }}"
+                      onsubmit="return confirm('Delete this session?');" class="flex-fill">
+                    <button class="btn btn-outline-danger btn-sm w-100">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-inbox display-1 text-muted"></i>
+    <p class="lead mt-3">You haven't recorded any sessions yet.</p>
+    <a href="{{ url_for('predict') }}" class="btn btn-primary">Start your first analysis</a>
+</div>
+{% endif %}
+{% endblock %}

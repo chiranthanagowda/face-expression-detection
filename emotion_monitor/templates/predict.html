@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-body p-4">
+
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <i class="bi bi-camera-video display-3 text-primary"></i>
+                    <h3 class="fw-bold mt-3">Start Emotion Analysis</h3>
+                    <p class="text-muted mb-0">
+                        Choose how you want to run the analysis.
+                    </p>
+                </div>
+
+                <!-- Form -->
+                <form method="POST" id="predictForm">
+
+                    <!-- Duration -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Duration (seconds)
+                        </label>
+                        <input type="number" name="duration"
+                               class="form-control form-control-lg text-center"
+                               value="30" min="5" max="600" required>
+                        <div class="form-text text-center">
+                            Minimum 5s, maximum 600s.
+                        </div>
+                    </div>
+
+                    <!-- Lecture markers (optional) -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            Lecture Markers (optional)
+                        </label>
+                        <input type="text" name="lecture_markers"
+                               class="form-control"
+                               placeholder="0:Introduction, 60:Topic 1, 180:Example, 300:Summary">
+                        <div class="form-text">
+                            Format: <code>seconds:label</code> separated by commas.
+                            Enables per-topic breakdown.
+                        </div>
+                    </div>
+
+                    <!-- Mode selection -->
+                    <label class="form-label fw-semibold d-block text-center mb-3">
+                        Choose Analysis Mode
+                    </label>
+
+                    <div class="row g-3">
+                        <!-- OpenCV Window -->
+                        <div class="col-md-6">
+                            <button type="submit"
+                                    formaction="{{ url_for('predict') }}"
+                                    class="btn btn-outline-primary btn-lg w-100 py-4 h-100 mode-btn">
+                                <i class="bi bi-window-stack display-5 d-block mb-2"></i>
+                                <div class="fw-bold">OpenCV Window</div>
+                                <small class="text-muted d-block mt-1" style="font-size: 0.8rem;">
+                                    Opens a native desktop<br>camera window
+                                </small>
+                            </button>
+                        </div>
+
+                        <!-- Browser Live -->
+                        <div class="col-md-6">
+                            <button type="submit"
+                                    formaction="{{ url_for('predict_live') }}"
+                                    class="btn btn-success btn-lg w-100 py-4 h-100 mode-btn">
+                                <i class="bi bi-browser-chrome display-5 d-block mb-2"></i>
+                                <div class="fw-bold">Browser Live</div>
+                                <small class="text-white-50 d-block mt-1" style="font-size: 0.8rem;">
+                                    Streams webcam inside<br>this web page
+                                </small>
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+
+                <!-- Info alert -->
+                <div class="alert alert-info mt-4 mb-0 small">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Tip:</strong> Use <em>Browser Live</em> for a smoother,
+                    in-page experience. Use <em>OpenCV Window</em> if you prefer a
+                    native desktop window (press <kbd>q</kbd> there to stop early).
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .mode-btn {
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .mode-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(30, 58, 138, 0.15);
+    }
+</style>
+
+{% endblock %}

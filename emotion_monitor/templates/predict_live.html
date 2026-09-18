@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow border-0">
+            <div class="card-body p-4">
+                <h3 class="fw-bold text-center mb-3">
+                    <i class="bi bi-camera-video text-primary"></i>
+                    Live Emotion Analysis
+                </h3>
+
+                <!-- Live video -->
+                <div class="text-center bg-dark rounded mb-3"
+                     style="overflow:hidden;">
+                    <img id="liveFeed"
+                         src="{{ url_for('video_feed') }}"
+                         class="img-fluid"
+                         style="max-height:520px; width:auto;">
+                </div>
+
+                <!-- Status bar -->
+                <div class="row text-center g-2 mb-3">
+                    <div class="col">
+                        <div class="border rounded py-2 bg-light">
+                            <small class="text-muted d-block">Status</small>
+                            <strong id="statusText" class="text-primary">Running</strong>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="border rounded py-2 bg-light">
+                            <small class="text-muted d-block">Time Left</small>
+                            <strong id="timeLeft" class="text-success">--</strong>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="border rounded py-2 bg-light">
+                            <small class="text-muted d-block">Current Emotion</small>
+                            <strong id="curEmotion" class="text-warning">--</strong>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="border rounded py-2 bg-light">
+                            <small class="text-muted d-block">Confidence</small>
+                            <strong id="curConf" class="text-info">--</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                <div class="progress mb-3" style="height:10px;">
+                    <div id="progressBar"
+                         class="progress-bar bg-primary"
+                         role="progressbar"
+                         style="width:0%;"></div>
+                </div>
+
+                <!-- Controls -->
+                <div class="text-center">
+                    <button id="stopBtn" class="btn btn-danger me-2">
+                        <i class="bi bi-stop-fill"></i> Stop Early
+                    </button>
+                    <a href="{{ url_for('dashboard') }}"
+                       class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DURATION = {{ duration }};
+    let startTime = Date.now();
+    let stopped = false;
+    let errorsShown = false;
+    let finishing = false;   // ← Prevents double redirect
+
+    // Error banner
+    const errorBanner = document.createElement('div');
+    errorBanner.className = 'alert alert-danger mt-3';
+    errorBanner.style.display = 'none';
+    errorBanner.innerHTML =
+        '<i class="bi bi-exclamation-triangle"></i> ' +
+        '<strong>Camera error:</strong> <span id="errMsg"></span>';
+    document.querySelector('.card-body').appendChild(errorBanner);
+
+    const poll = setInterval(async () => {
+        if (finishing) return;
+
+        try {
+            const r = await fetch("{{ url_for('predict_status') }}");
+            const data = await r.json();
+
+            if (data.error && !errorsShown) {
+                errorsShown = true;
+                document.getElementById('errMsg').textContent = data.error;
+                errorBanner.style.display = 'block';
+                document.getElementById('statusText').textContent = 'Error';
+                document.getElementById('statusText').className = 'text-danger';
+                document.getElementById('liveFeed').src = '';
+                clearInterval(poll);
+                return;
+            }
+
+            if (data.emotion) {
+                document.getElementById('curEmotion').textContent = data.emotion;
+                document.getElementById('curConf').textContent =
+                    (data.confidence * 100).toFixed(1) + '%';
+            }
+
+            const elapsed = (Date.now() - startTime) / 1000;
+            const left = Math.max(0, DURATION - elapsed);
+            document.getElementById('timeLeft').textContent = left.toFixed(1) + 's';
+            document.getElementById('progressBar').style.width =
+                Math.min(100, (elapsed / DURATION) * 100) + '%';
+
+            if ((data.done || elapsed >= DURATION || stopped) && !finishing) {
+                finishing = true;
+                clearInterval(poll);
+                document.getElementById('statusText').textContent = 'Complete';
+                document.getElementById('timeLeft').textContent = '0s';
+                document.getElementById('liveFeed').src = '';
+
+                // Give the worker 1.2s to fully finish and save state
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('predict_finish') }}";
+                }, 1200);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }, 500);
+
+    document.getElementById('stopBtn').addEventListener('click', async () => {
+        if (finishing) return;
+        stopped = true;
+        document.getElementById('statusText').textContent = 'Stopping...';
+        await fetch("{{ url_for('predict_stop') }}", { method: 'POST' });
+    });
+</script>
+{% endblock %}
